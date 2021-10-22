@@ -1,7 +1,6 @@
 import base64
 import os
 import time
-import glob
 
 import pydicom as pdm
 from pydicom.filebase import DicomBytesIO
@@ -49,14 +48,14 @@ def get_overlaid_masks_on_image(
     path_to_save_ = os.path.join(path_to_save, name_to_save)
     lung, heart, trachea = [one_slice_mask[:, :, i] for i in range(3)]
     figsize = (w / dpi), (h / dpi)
-    fig = plt.figure(figsize=(figsize))
+    fig = plt.figure(figsize=figsize)
     fig.add_axes([0, 0, 1, 1])
 
     # image
     plt.imshow(one_slice_image, cmap="bone")
 
     # overlaying segmentation masks
-    plt.imshow(np.ma.masked_where(lung == False, lung),cmap='cool', alpha=0.3)
+    plt.imshow(np.ma.masked_where(lung == False, lung), cmap='cool', alpha=0.3)
     plt.imshow(np.ma.masked_where(heart == False, heart), cmap='autumn', alpha=0.3)
     plt.imshow(np.ma.masked_where(trachea == False, trachea), cmap='autumn_r', alpha=0.3)
 
@@ -84,7 +83,8 @@ def convert_to_jpg(dcm, output_path, img_name, eps=1e-9):
     return None
 
 
-sigmoid = lambda x: 1 / (1 + np.exp(-x))
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
 
 
 # Main process of the app
@@ -104,6 +104,7 @@ def run_process(*uploaded_files):
     st.info("Processing uploaded files.")
     progress_bar = st.progress(0)
 
+    # Main loop of the program
     dcm_files = []
     images_file_path = []
     for file in uploaded_files:
@@ -138,6 +139,7 @@ def run_process(*uploaded_files):
 
         progress_bar.progress(len(dcm_files) / len(uploaded_files))
 
+    # Saving results into a gif
     output_file_path = os.path.join(output_data_path, 'output.gif')
 
     img, *imgs = [Image.open(f) for f in images_file_path]
